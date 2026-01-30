@@ -1,0 +1,17 @@
+# data volume / local data
+data/
+*.log
+
+# env files
+.env
+.env.*
+!.env.example
+odoo/config/odoo.conf
+
+# python extra
+__pycache__/
+*.pyc
+
+# extras
+.idea
+.git

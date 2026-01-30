@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:13
+    env_file: .env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+
+  odoo:
+    image: odoo:14.0
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    ports:
+      - "8069:8069"
+    entrypoint: ["/usr/local/bin/odoo-entrypoint.sh"]
+    volumes:
+      - ./odoo/entrypoint/odoo-entrypoint.sh:/usr/local/bin/odoo-entrypoint.sh:ro
+      - ./odoo/config:/etc/odoo
+      - ./odoo/addons:/mnt/extra-addons
