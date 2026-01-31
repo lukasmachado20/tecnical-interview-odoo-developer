@@ -14,6 +14,17 @@ services:
     volumes:
       - ./data/db:/var/lib/postgresql/data
 
+  flask:
+    build:
+      context: ./flask_app
+    container_name: paycon_flask_app
+    env_file: .env
+    depends_on:
+      - odoo
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
   odoo:
     build: .
     image: odoo14-custom
