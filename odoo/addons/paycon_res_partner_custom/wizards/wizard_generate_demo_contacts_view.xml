@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="wizard_generate_demo_contacts_form" model="ir.ui.view">
+        <field name="name">wizard.generate.demo.contacts.form</field>
+        <field name="model">wizard.generate.demo.contacts</field>
+        <field name="arch" type="xml">
+            <form string="Generate Demo Contacts">
+                <sheet>
+                    <group>
+                        <field name="quantity"/>
+                        <field name="companies_ratio" required="1"/>
+                        <field name="active_ratio" required="1"/>
+                        <field name="force_recreate"/>
+                        <field name="dry_run"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button
+                            name="action_generate_demo_contacts"
+                            string="Generate"
+                            class="btn-success"
+                            type="object"
+                            confirm="Generate Demo Contacts?"
+                    />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_generate_demo_contacts_form_view" model="ir.actions.act_window">
+        <field name="name">Generate Demo Contacts</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">wizard.generate.demo.contacts</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+            id="menu_generate_demo_contacts"
+            name="Generate Demo Contacts"
+            action="action_generate_demo_contacts_form_view"
+            parent="contacts.res_partner_menu_contacts"
+    />
+</odoo>

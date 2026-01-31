@@ -1,5 +1,6 @@
 # data volume / local data
-data/
+/data/db
+/data/odoo
 *.log
 
 # env files

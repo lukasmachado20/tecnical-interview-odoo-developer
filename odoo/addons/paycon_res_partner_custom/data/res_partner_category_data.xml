@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="res_partner_category_paycon_interview" model="res.partner.category">
+        <field name="name">Seed: Paycon Interview</field>
+    </record>
+</odoo>
