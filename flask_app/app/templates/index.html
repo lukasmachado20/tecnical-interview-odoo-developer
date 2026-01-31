@@ -1,0 +1,46 @@
+<!doctype html>
+{% extends "base.html" %}
+{% block title %}Smoke Test - Odoo JSON-RPC{% endblock %}
+
+{% block content %}
+  <h1>Paycon Test Developer</h1>
+  <p class="muted">This page confirms Flask can authenticate and read <code>res.partner</code> via JSON-RPC at runtime.</p>
+
+  {% if error %}
+    <div class="error"><strong>Error:</strong> {{ error }}</div>
+  {% endif %}
+
+  <div class="card">
+    <p><strong>UID:</strong> <code>{{ uid }}</code></p>
+    <p><strong>Returned contacts:</strong> {{ partners|length }}</p>
+  </div>
+
+  <div class="card" style="margin-top: 14px;">
+    <h3>Sample records</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Company?</th>
+          <th>Country</th>
+          <th>State</th>
+          <th>Create date</th>
+          <th>x_cliente_ativo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in partners %}
+          <tr>
+            <td>{{ p.get("name") }}</td>
+            <td>{{ p.get("is_company") }}</td>
+            <td>{{ p.get("country_id") }}</td>
+            <td>{{ p.get("state_id") }}</td>
+            <td>{{ p.get("create_date") }}</td>
+            <td>{{ p.get("x_cliente_ativo") }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
+
