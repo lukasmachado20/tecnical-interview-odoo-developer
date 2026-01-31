@@ -15,4 +15,4 @@ COPY . /app
 
 EXPOSE 5000
 
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:create_app()"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:create_app()", "--workers", "2", "--threads", "4", "--timeout", "120", "--graceful-timeout", "30", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "--capture-output"]
