@@ -1,46 +1,74 @@
 <!doctype html>
 {% extends "base.html" %}
-{% block title %}Smoke Test - Odoo JSON-RPC{% endblock %}
+{% block title %}Odoo Contacts Dashboard - Paycon Test Developer - Lukas S. Machado{% endblock %}
 
 {% block content %}
-  <h1>Paycon Test Developer</h1>
-  <p class="muted">This page confirms Flask can authenticate and read <code>res.partner</code> via JSON-RPC at runtime.</p>
+  <h1>Odoo Contacts Dashboard - Paycon Test Developer - Lukas S. Machado</h1>
+  <p class="muted">Dados carregados em runtime via JSON-RPC (res.partner).</p>
 
   {% if error %}
-    <div class="error"><strong>Error:</strong> {{ error }}</div>
+    <div class="error"><strong>Erro:</strong> {{ error }}</div>
   {% endif %}
 
-  <div class="card">
-    <p><strong>UID:</strong> <code>{{ uid }}</code></p>
-    <p><strong>Returned contacts:</strong> {{ partners|length }}</p>
-  </div>
+{% if cards %}
+    <div class="cards">
+      <div class="card kpi">
+        <div class="kpi-label">Total de contatos</div>
+        <div class="kpi-value">{{ cards.total_contacts }}</div>
+        <div class="kpi-help">Contatos retornados do Odoo</div>
+      </div>
 
-  <div class="card" style="margin-top: 14px;">
-    <h3>Sample records</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Company?</th>
-          <th>Country</th>
-          <th>State</th>
-          <th>Create date</th>
-          <th>x_cliente_ativo</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for p in partners %}
-          <tr>
-            <td>{{ p.get("name") }}</td>
-            <td>{{ p.get("is_company") }}</td>
-            <td>{{ p.get("country_id") }}</td>
-            <td>{{ p.get("state_id") }}</td>
-            <td>{{ p.get("create_date") }}</td>
-            <td>{{ p.get("x_cliente_ativo") }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+      <div class="card kpi">
+        <div class="kpi-label">% clientes ativos</div>
+        <div class="kpi-value">{{ "%.1f"|format(cards.active_percent) }}%</div>
+        <div class="kpi-help">Baseado no campo <code>x_cliente_ativo</code></div>
+      </div>
+
+      <div class="card kpi">
+        <div class="kpi-label">Nº de países</div>
+        <div class="kpi-value">{{ cards.countries }}</div>
+        <div class="kpi-help">Países distintos em <code>country_id</code></div>
+      </div>
+
+      <div class="card kpi">
+        <div class="kpi-label">% empresas</div>
+        <div class="kpi-value">{{ "%.1f"|format(cards.companies_percent) }}%</div>
+        <div class="kpi-help">Baseado no campo <code>is_company</code></div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if charts %}
+    <div class="grid">
+      <div class="card">
+        <h3>Distribuição de clientes ativos</h3>
+        <p class="muted">Mostra a proporção de contatos com <code>x_cliente_ativo</code> = Sim/Não.</p>
+        <div id="chart_active"></div>
+      </div>
+
+      <div class="card">
+        <h3>Contatos por país</h3>
+        <p class="muted">Top 10 países por quantidade de contatos (com tooltip por país).</p>
+        <div id="chart_country"></div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <h3>Criação de contatos por mês</h3>
+        <p class="muted">Série temporal baseada em <code>create_date</code>, agregada por mês.</p>
+        <div id="chart_month"></div>
+      </div>
+    </div>
+
+    <script>
+      const charts = {
+        active: JSON.parse({{ charts.active | tojson }}),
+        country: JSON.parse({{ charts.country | tojson }}),
+        month: JSON.parse({{ charts.month | tojson }})
+      };
+
+      Plotly.newPlot("chart_active", charts.active.data, charts.active.layout, {responsive: true});
+      Plotly.newPlot("chart_country", charts.country.data, charts.country.layout, {responsive: true});
+      Plotly.newPlot("chart_month", charts.month.data, charts.month.layout, {responsive: true});
+    </script>
+  {% endif %}
 {% endblock %}
-
