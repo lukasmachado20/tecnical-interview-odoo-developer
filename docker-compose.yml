@@ -12,7 +12,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - pg13data:/var/lib/postgresql/data
 
   flask:
     build:
@@ -39,4 +39,7 @@ services:
       - ./odoo/entrypoint/odoo-entrypoint.sh:/usr/local/bin/odoo-entrypoint.sh:ro
       - ./odoo/config:/etc/odoo
       - ./odoo/addons:/mnt/extra-addons
-      - ./data/odoo:/var/lib/odoo/.local/share/Odoo
+      - ./data/odoo:/var/lib/odoo
+
+volumes:
+  pg13data:

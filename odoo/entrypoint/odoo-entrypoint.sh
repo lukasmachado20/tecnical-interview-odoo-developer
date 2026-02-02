@@ -2,10 +2,18 @@
 # Entrypoint to start Odoo 14 with pt_BR lang and contact module installed.
 # Author: Lukas S. Machado
 
+set -euo pipefail
+
 echo "[entrypoint] Starting Odoo entrypoint"
+
+# Fix permissions for odoo local bind mounted
+echo "[entrypoint] Fixing permissions for /var/lib/odoo ..."
+mkdir -p /var/lib/odoo/.local/share/Odoo
+chown -R odoo:odoo /var/lib/odoo || true
+
 echo "[entrypoint] Waiting for PostgreSQL at ${DB_HOST}:${DB_PORT} ..."
 
-python3 -u <<'EOF'
+gosu odoo python3 -u <<'EOF'
 import os, time
 import psycopg2
 
@@ -27,7 +35,8 @@ EOF
 
 echo "[entrypoint] Determining whether bootstrap is needed for DB=${DB_NAME} ..."
 
-python3 -u <<'EOF'
+set +e
+gosu odoo python3 -u <<'EOF'
 import os
 import psycopg2
 import sys
@@ -57,40 +66,47 @@ if not db_exists:
     sys.exit(42)
 
 # 2) If DB exists, verify contacts + pt_BR
-conn = pg_connect(DB_NAME)
-cur = conn.cursor()
+try:
+    conn = pg_connect(DB_NAME)
+    cur = conn.cursor()
 
-cur.execute("SELECT state FROM ir_module_module WHERE name='contacts'")
-row = cur.fetchone()
-contacts_state = row[0] if row else None
+    cur.execute("SELECT state FROM ir_module_module WHERE name='contacts'")
+    row = cur.fetchone()
+    contacts_state = row[0] if row else None
 
-cur.execute("SELECT active FROM res_lang WHERE code='pt_BR'")
-row = cur.fetchone()
-ptbr_active = bool(row[0]) if row else False
+    cur.execute("SELECT active FROM res_lang WHERE code='pt_BR'")
+    row = cur.fetchone()
+    ptbr_active = bool(row[0]) if row else False
 
-cur.close()
-conn.close()
+    cur.close()
+    conn.close()
 
-print(f"[entrypoint] Found DB. contacts_state={contacts_state}, pt_BR_active={ptbr_active}")
+    print(f"[entrypoint] Found DB. contacts_state={contacts_state}, pt_BR_active={ptbr_active}")
 
-if contacts_state != "installed" or not ptbr_active:
-    print("[entrypoint] Bootstrap incomplete -> bootstrap required.")
+    if contacts_state != "installed" or not ptbr_active:
+        print("[entrypoint] Bootstrap incomplete -> bootstrap required.")
+        sys.exit(42)
+
+    print("[entrypoint] Bootstrap already applied -> skipping.")
+    sys.exit(0)
+
+except psycopg2.Error as e:
+    # Covers "relation does not exist" etc (schema not initialized yet)
+    print(f"[entrypoint] DB exists but schema/bootstrap markers unavailable -> bootstrap required. ({e})")
     sys.exit(42)
-
-print("[entrypoint] Bootstrap already applied -> skipping.")
-sys.exit(0)
 EOF
-
 NEED_BOOTSTRAP=$?
+set -e
+
 if [ "$NEED_BOOTSTRAP" -eq 42 ]; then
   echo "[entrypoint] Running bootstrap (install contacts, load pt_BR)..."
-  odoo \
+  gosu odoo odoo \
     --db_host="${DB_HOST}" \
     --db_port="${DB_PORT}" \
     --db_user="${DB_USER}" \
     --db_password="${DB_PASSWORD}" \
     -d "${DB_NAME}" \
-    -i contacts \
+    -i contacts,paycon_res_partner_custom \
     --without-demo=all \
     --load-language=pt_BR \
     --stop-after-init
@@ -100,7 +116,7 @@ else
 fi
 
 echo "[entrypoint] Starting Odoo server..."
-exec odoo \
+exec gosu odoo odoo \
   --db_host="${DB_HOST}" \
   --db_port="${DB_PORT}" \
   --db_user="${DB_USER}" \
