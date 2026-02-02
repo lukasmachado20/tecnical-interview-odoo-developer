@@ -34,7 +34,7 @@ class OdooJsonRpcClient:
         self.session = requests.Session()
         self.endpoint = f"{cfg.url.rstrip('/')}/jsonrpc"
 
-    def _rpc_connection(self, service: str, method: str, args: tuple[Any, ...]):
+    def _rpc_connection(self, service: str, method: str, args: tuple[Any, ...]) -> list[list[Any]]:
         payload = {
             "jsonrpc": "2.0",
             "method": "call",
@@ -62,7 +62,7 @@ class OdooJsonRpcClient:
         self.uid = int(uid)
         return self.uid
 
-    def search_read(self, domain_search: list[list[Any]], limit: int = 0):
+    def search_read(self, domain_search: list[list[Any]], limit: int = 0) -> list[dict]:
         if self.uid is None:
             self.odoo_login()
 
