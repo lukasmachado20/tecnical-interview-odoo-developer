@@ -1,4 +1,4 @@
-# Desafio Desenvolvedor Odoo Paycon
+# Desafio Técnico Desenvolvedor Python
 
 Este repositório fornece um ambiente **Odoo 14** local totalmente reprodutível utilizando **Docker Compose**, com **bootstrap automático** na sua primeira inicialização.
 
